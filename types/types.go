@@ -61,6 +61,7 @@ type ProtectedChannel struct {
 
 type CancelContext struct {
   cancelFunctions map[int]context.CancelFunc
+  mu sync.Mutex
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -108,17 +109,21 @@ func NewCancelContext() *CancelContext {
   return &CancelContext{cancelFunctions: make(map[int]context.CancelFunc)}
 }
 
-func (ctxCancel *CancelContext)GetCancelFunction(id int) (context.CancelFunc, bool) {
-  val, exist := ctxCancel.cancelFunctions[id]
+func (cancelContext *CancelContext)GetCancelFunction(id int) (context.CancelFunc, bool) {
+  val, exist := cancelContext.cancelFunctions[id] 
   return val, exist
 }
 
 func (cancelContext *CancelContext) AddCancelFunction(id int, cancelFunction context.CancelFunc) {
+  cancelContext.mu.Lock()
   cancelContext.cancelFunctions[id] = cancelFunction 
+  cancelContext.mu.Unlock()
 }
 
-func (ctxCancel *CancelContext) DeleteCancelFunction(id int) {
-  delete(ctxCancel.cancelFunctions, id)
+func (cancelContext *CancelContext) DeleteCancelFunction(id int) {
+  cancelContext.mu.Lock()
+  delete(cancelContext.cancelFunctions, id)
+  cancelContext.mu.Unlock()
 }
 
 

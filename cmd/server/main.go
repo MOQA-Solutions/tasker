@@ -268,5 +268,3 @@ func getChannel(id int, priority string) chan types.WorkerEvent {
 	}
 }
 
-
-
